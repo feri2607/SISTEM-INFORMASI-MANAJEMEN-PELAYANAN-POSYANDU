@@ -1,0 +1,208 @@
+/* resources/css/app.css */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+        @apply bg-gray-100 dark:bg-gray-800;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        @apply bg-gray-300 dark:bg-gray-600 rounded-full;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        @apply bg-gray-400 dark:bg-gray-500;
+    }
+
+    /* Selection color */
+    ::selection {
+        @apply bg-blue-500 text-white;
+    }
+
+    /* Smooth scrolling */
+    html {
+        scroll-behavior: smooth;
+    }
+}
+
+@layer components {
+
+    /* Form Element Styles */
+    .form-input {
+        @apply w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white text-sm transition duration-200;
+    }
+
+    .form-label {
+        @apply block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5;
+    }
+
+    .form-error {
+        @apply mt-1.5 text-sm text-red-600 dark:text-red-400;
+    }
+
+    /* Base Button Layout */
+    .btn {
+        @apply inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-semibold rounded-xl transition duration-150 ease-in-out transform active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100;
+    }
+
+    /* Button Variants */
+    .btn-primary {
+        @apply btn text-white bg-[#036672] hover:bg-[#024d56] focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 shadow-lg shadow-blue-500/25 hover:scale-[1.02];
+    }
+
+    .btn-success {
+        @apply btn bg-[#036672] hover:bg-[#024d56] text-white focus:ring-2 focus:ring-green-500 focus:ring-offset-2;
+    }
+
+    .btn-danger {
+        @apply btn bg-[#036672] hover:bg-[#024d56] text-white focus:ring-2 focus:ring-red-500 focus:ring-offset-2;
+    }
+
+    .btn-warning {
+        @apply btn bg-[#036672] hover:bg-[#024d56] text-white focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2;
+    }
+
+    .btn-outline {
+        @apply btn border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700;
+    }
+
+    .btn-google {
+        @apply flex items-center justify-center w-full px-5 py-3 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-600 transition duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-sm;
+    }
+
+    /* Layout & Container Cards */
+    .card {
+        @apply bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700/50 overflow-hidden;
+    }
+
+    .card-body {
+        @apply p-6;
+    }
+
+    .card-header {
+        @apply px-6 py-4 border-b border-gray-200 dark:border-gray-700;
+    }
+
+    .card-title {
+        @apply text-lg font-semibold text-gray-900 dark:text-white;
+    }
+
+    .auth-card {
+        @apply bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-2xl border border-white/20 dark:border-gray-700/50 overflow-hidden;
+    }
+
+    /* Data Tables */
+    .table-responsive {
+        @apply overflow-x-auto;
+    }
+
+    .table {
+        @apply min-w-full divide-y divide-gray-200 dark:divide-gray-700;
+    }
+
+    .table thead {
+        @apply bg-gray-50 dark:bg-gray-800;
+    }
+
+    .table th {
+        @apply px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider;
+    }
+
+    .table td {
+        @apply px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300;
+    }
+
+    .table tbody tr {
+        @apply hover:bg-gray-50 dark:hover:bg-gray-700/50 transition duration-150;
+    }
+
+    /* Badges & Status Indicators */
+    .badge {
+        @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+    }
+
+    .badge-success {
+        @apply badge bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400;
+    }
+
+    .badge-danger {
+        @apply badge bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400;
+    }
+
+    .badge-warning {
+        @apply badge bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400;
+    }
+
+    .badge-info {
+        @apply badge bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400;
+    }
+
+    /* Password Strength Features */
+    .password-strength-bar {
+        @apply h-2 rounded-full transition-all duration-300;
+    }
+
+    .password-strength-weak {
+        @apply bg-red-500;
+    }
+
+    .password-strength-medium {
+        @apply bg-yellow-500;
+    }
+
+    .password-strength-strong {
+        @apply bg-green-500;
+    }
+
+    .password-strength-very-strong {
+        @apply bg-emerald-500;
+    }
+
+    .requirement-check {
+        @apply inline-block w-4 text-center;
+    }
+
+    .requirement-met {
+        @apply text-green-600 dark:text-green-400;
+    }
+
+    .requirement-unmet {
+        @apply text-gray-500 dark:text-gray-400;
+    }
+
+    /* Loading Utilities */
+    .spinner {
+        @apply inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin;
+    }
+}
+
+/* Global Utilities & Keyframes */
+[x-cloak] {
+    display: none !important;
+}
+
+@keyframes countUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-count {
+    animation: countUp 0.6s ease-out forwards;
+}

@@ -1,0 +1,66 @@
+<?php
+// database/migrations/2026_01_01_000026_create_remaja_table.php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up()
+    {
+        Schema::create('remaja', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('warga_id')->constrained('warga')->onDelete('cascade');
+            $table->string('nama');
+            $table->integer('umur');
+            $table->enum('jenis_kelamin', ['L', 'P']);
+            $table->string('sekolah')->nullable();
+            $table->string('golongan_darah')->nullable();
+            $table->boolean('is_verified')->default(false);
+            $table->timestamps();
+        });
+
+        Schema::create('pemeriksaan_remaja', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('remaja_id')->constrained('remaja')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->date('tanggal');
+            $table->decimal('berat_badan', 5, 2)->nullable();
+            $table->decimal('tinggi_badan', 5, 2)->nullable();
+            $table->decimal('bmi', 5, 2)->nullable();
+            $table->string('tekanan_darah')->nullable();
+            $table->string('status_hb')->nullable();
+            $table->text('catatan')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('tablet_tambah_darah', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('remaja_id')->constrained('remaja')->onDelete('cascade');
+            $table->integer('target')->default(90);
+            $table->integer('dikonsumsi')->default(0);
+            $table->date('tanggal_mulai')->nullable();
+            $table->date('tanggal_selesai')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('konseling_remaja', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('remaja_id')->constrained('remaja')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->date('tanggal');
+            $table->string('topik');
+            $table->text('catatan')->nullable();
+            $table->timestamps();
+        });
+    }
+
+    public function down()
+    {
+        Schema::dropIfExists('konseling_remaja');
+        Schema::dropIfExists('tablet_tambah_darah');
+        Schema::dropIfExists('pemeriksaan_remaja');
+        Schema::dropIfExists('remaja');
+    }
+};
