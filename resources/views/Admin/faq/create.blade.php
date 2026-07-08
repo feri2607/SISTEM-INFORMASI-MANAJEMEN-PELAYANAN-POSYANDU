@@ -12,6 +12,7 @@
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
         <div class="p-6">
             <form method="POST" action="{{ route('admin.faq.store') }}" 
+                  x-ref="form"
                   x-data="faqForm()"
                   @submit.prevent="submitForm">
                 @csrf
