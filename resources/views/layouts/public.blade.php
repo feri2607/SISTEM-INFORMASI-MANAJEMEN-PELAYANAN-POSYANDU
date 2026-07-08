@@ -49,11 +49,6 @@
     {{-- Scripts --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     
-    {{-- Alpine.js Plugins --}}
-    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/intersect@3.14.3/dist/cdn.min.js"></script>
-    {{-- Alpine.js --}}
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.3/dist/cdn.min.js"></script>
-    
     @stack('styles')
 </head>
 <body x-data="{ 
