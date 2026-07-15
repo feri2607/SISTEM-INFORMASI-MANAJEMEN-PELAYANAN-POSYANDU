@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use App\Services\LaporanService;
@@ -69,11 +68,14 @@ class LaporanController extends Controller
         }
 
         $filters = $request->all();
-        $kategori = $request->input('kategori');
-        $data = $this->getExportData($kategori, $filters);
+        $stats = $this->laporanService->getDashboardStats($filters);
+        
+        $datasets = $this->getAllDatasets($filters);
 
-        $pdf = Pdf::loadView("laporan.exports.{$kategori}_pdf", compact('data', 'filters'));
-        return $pdf->download("laporan_{$kategori}_" . date('Ymd_His') . ".pdf");
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('laporan.exports.posyandu_pdf', compact('filters', 'stats', 'datasets'))
+                    ->setPaper('a4', 'landscape');
+                    
+        return $pdf->download('Laporan_Posyandu_' . date('Y_m_d') . '.pdf');
     }
 
     public function exportExcel(Request $request)
@@ -83,57 +85,38 @@ class LaporanController extends Controller
         }
 
         $filters = $request->all();
-        $kategori = $request->input('kategori');
+        $stats = $this->laporanService->getDashboardStats($filters);
+        
+        $datasets = $this->getAllDatasets($filters);
 
-        // Note: You would normally use Maatwebsite's FromView interface here.
-        // I will create a simple CSV export for speed and reliability instead of setting up complete Export classes
-        
-        $data = $this->getExportData($kategori, $filters);
-        $fileName = "laporan_{$kategori}_" . date('Ymd_His') . ".csv";
-        
-        $headers = array(
-            "Content-type"        => "text/csv",
-            "Content-Disposition" => "attachment; filename=$fileName",
-            "Pragma"              => "no-cache",
-            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
-            "Expires"             => "0"
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new \App\Exports\LaporanPosyanduExport($filters, $stats, $datasets), 
+            'Laporan_Posyandu_' . date('Y_m_d') . '.xlsx'
         );
-
-        $columns = array('Tanggal', 'Peserta', 'Kategori', 'Petugas'); // Dynamic mapped per type
-
-        $callback = function() use($data, $columns, $kategori) {
-            $file = fopen('php://output', 'w');
-            fputcsv($file, $columns);
-
-            foreach ($data as $row) {
-                // map dynamically based on kategori
-                // e.g., Balita
-                if ($kategori === 'balita') {
-                    fputcsv($file, [
-                        $row->created_at->format('Y-m-d'),
-                        $row->balita->nama,
-                        'Balita',
-                        $row->pegawai->name ?? '-'
-                    ]);
-                }
-            }
-
-            fclose($file);
-        };
-
-        return response()->stream($callback, 200, $headers);
     }
 
-    private function getExportData($kategori, $filters)
+    private function getAllDatasets($filters)
     {
-        if ($kategori === 'balita') return $this->laporanService->getLaporanBalita($filters, true);
-        if ($kategori === 'kehamilan') return $this->laporanService->getLaporanKehamilan($filters, true);
-        if ($kategori === 'wuspus') return $this->laporanService->getLaporanWusPus($filters, true);
-        if ($kategori === 'remaja') return $this->laporanService->getLaporanRemaja($filters, true);
-        if ($kategori === 'lansia') return $this->laporanService->getLaporanLansia($filters, true);
-        if ($kategori === 'kegiatan') return $this->laporanService->getLaporanKegiatan($filters, true);
-        if ($kategori === 'pegawai') return $this->laporanService->getLaporanPegawai($filters, true);
+        $datasets = [
+            'balita' => $this->laporanService->getLaporanBalita($filters, true),
+            'kehamilan' => $this->laporanService->getLaporanKehamilan($filters, true),
+            'wuspus' => $this->laporanService->getLaporanWusPus($filters, true),
+            'remaja' => $this->laporanService->getLaporanRemaja($filters, true),
+            'lansia' => $this->laporanService->getLaporanLansia($filters, true),
+            'kegiatan' => $this->laporanService->getLaporanKegiatan($filters, true),
+            'pegawai' => $this->laporanService->getLaporanPegawai($filters, true),
+        ];
+
+        $semua = collect();
+        foreach($datasets['balita'] as $row) { $row->nama_peserta = $row->balita?->nama ?? ''; $row->nik = $row->balita?->warga?->nik ?? ''; $semua->push($row); }
+        foreach($datasets['kehamilan'] as $row) { $row->nama_peserta = $row->kehamilan?->warga?->nama ?? ''; $row->nik = $row->kehamilan?->warga?->nik ?? ''; $semua->push($row); }
+        foreach($datasets['wuspus'] as $row) { $row->nama_peserta = $row->wus?->warga?->nama ?? ''; $row->nik = $row->wus?->warga?->nik ?? ''; $semua->push($row); }
+        foreach($datasets['remaja'] as $row) { $row->nama_peserta = $row->remaja?->warga?->nama ?? ''; $row->nik = $row->remaja?->warga?->nik ?? ''; $semua->push($row); }
+        foreach($datasets['lansia'] as $row) { $row->nama_peserta = $row->lansia?->warga?->nama ?? ''; $row->nik = $row->lansia?->warga?->nik ?? ''; $semua->push($row); }
         
-        return collect();
+        $datasets['semua'] = $semua->sortByDesc('created_at')->values();
+
+        return $datasets;
     }
 }
+
