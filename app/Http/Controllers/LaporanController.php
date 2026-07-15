@@ -33,8 +33,13 @@ class LaporanController extends Controller
         $stats = [];
         $data = null;
         
+        $staffLeaderboard = collect();
         if ($kategori === 'dashboard') {
             $stats = $this->laporanService->getDashboardStats($filters);
+            $staffLeaderboard = collect($this->laporanService->getLaporanPegawai($filters))
+                ->sortByDesc('total')
+                ->take(5)
+                ->values();
         } elseif ($kategori === 'balita') {
             $data = $this->laporanService->getLaporanBalita($filters);
         } elseif ($kategori === 'kehamilan') {
@@ -54,7 +59,7 @@ class LaporanController extends Controller
         $viewPrefix = Auth::user()->role === 'admin' ? 'admin' : 'pegawai';
         $pegawais = \App\Models\User::where('role', 'pegawai')->get();
 
-        return view('laporan.index', compact('stats', 'data', 'kategori', 'filters', 'pegawais', 'viewPrefix'));
+        return view('laporan.index', compact('stats', 'data', 'kategori', 'filters', 'pegawais', 'viewPrefix', 'staffLeaderboard'));
     }
 
     public function exportPdf(Request $request)
