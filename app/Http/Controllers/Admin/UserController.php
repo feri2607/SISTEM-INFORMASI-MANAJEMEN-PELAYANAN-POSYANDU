@@ -32,7 +32,12 @@ class UserController extends Controller
 
         // Filter by role
         if ($request->filled('role') && $request->role !== 'all') {
-            $query->where('role', $request->role);
+            if ($request->role === 'warga') {
+                // Include legacy 'user' role as well
+                $query->whereIn('role', ['warga', 'user']);
+            } else {
+                $query->where('role', $request->role);
+            }
         }
 
         // Filter by provider
@@ -60,12 +65,11 @@ class UserController extends Controller
 
         $users = $query->paginate(10);
 
-        // Stats
         $stats = [
             'total_admin' => User::where('role', 'admin')->count(),
-            'total_user' => User::where('role', 'user')->count(),
-            'verified' => User::whereNotNull('email_verified_at')->count(),
-            'unverified' => User::whereNull('email_verified_at')->count(),
+            'total_user'  => User::whereIn('role', ['warga', 'user'])->count(),
+            'verified'    => User::whereNotNull('email_verified_at')->count(),
+            'unverified'  => User::whereNull('email_verified_at')->count(),
         ];
 
         return view('admin.users.index', compact('users', 'stats'));
@@ -83,7 +87,7 @@ class UserController extends Controller
         $this->authorize('updateRole', $user);
 
         // Check if trying to demote the last admin
-        if ($user->role === 'admin' && $request->role === 'user') {
+        if ($user->role === 'admin' && !in_array($request->role, ['admin'])) {
             $adminCount = User::where('role', 'admin')->count();
             if ($adminCount <= 1) {
                 throw ValidationException::withMessages([

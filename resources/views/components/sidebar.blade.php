@@ -103,6 +103,10 @@
                     FAQ
                 </x-nav-link>
 
+                <x-nav-link href="{{ route('admin.contact.messages') }}" icon="mail" active="{{ request()->routeIs('admin.contact*') }}">
+                    Kontak & Pesan
+                </x-nav-link>
+
                 <!-- Khusus Admin -->
                 <div class="pt-5 pb-2 px-4 overflow-hidden" x-show="sidebarOpen" x-transition>
                     <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider block truncate">Khusus

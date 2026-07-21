@@ -4,24 +4,25 @@
 namespace App\Http\Controllers\Warga;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use App\Models\Warga;
 use App\Models\Balita;
 use App\Models\KegiatanPosyandu;
-use App\Models\HasilPelayanan;
 use App\Models\PemeriksaanBalita;
 use App\Models\Artikel;
 use App\Models\Pengumuman;
-use Illuminate\Http\Request;
+use App\Services\CitizenCategoryService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
-use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
+    public function __construct(
+        private readonly CitizenCategoryService $categoryService
+    ) {}
+
     public function index()
     {
-        $user = Auth::user();
+        $user  = Auth::user();
         $warga = $user->warga;
 
         if (!$warga) {
@@ -29,14 +30,20 @@ class DashboardController extends Controller
                 ->with('warning', 'Silakan lengkapi data warga Anda terlebih dahulu.');
         }
 
+        // Kategori otomatis
+        $categories = $this->categoryService->getCategories($warga);
+        $menus      = $this->categoryService->getDashboardMenus($warga);
+
         // Statistik
         $stats = $this->getStats($warga);
 
         // Ringkasan Kesehatan Keluarga
-        $familySummary = $this->getFamilySummary($warga);
+        $familySummary = $this->getFamilySummary($warga, $categories);
 
-        // Data untuk grafik
-        $chartData = $this->getChartData($warga);
+        // Data untuk grafik (hanya jika punya balita)
+        $chartData = in_array('balita', $categories)
+            ? $this->getChartData($warga)
+            : ['berat' => ['labels' => [], 'data' => []], 'tinggi' => ['labels' => [], 'data' => []], 'status_gizi' => ['labels' => [], 'data' => []]];
 
         // Jadwal terdekat
         $upcomingSchedule = KegiatanPosyandu::where('status', '!=', 'selesai')
@@ -50,21 +57,15 @@ class DashboardController extends Controller
         // Notifikasi
         $notifications = $this->getNotifications($warga);
 
-        // Quick Actions
-        $quickActions = $this->getQuickActions();
-
-        // Health Cards Data
-        $healthCards = $this->getHealthCards($warga);
-
         return view('warga.dashboard', compact(
             'warga',
+            'categories',
+            'menus',
             'stats',
             'familySummary',
             'chartData',
             'upcomingSchedule',
             'notifications',
-            'quickActions',
-            'healthCards'
         ));
     }
 
@@ -103,53 +104,45 @@ class DashboardController extends Controller
         });
     }
 
-    private function getFamilySummary($warga)
+    private function getFamilySummary(Warga $warga, array $categories): array
     {
-        $anggotaKeluarga = collect([]); // Hubungan anggotaKeluarga belum diimplementasikan di struktur ini
-        $balita = $warga->balita()->get();
-
-        // Hitung jumlah berdasarkan kategori
-        $totalBalita = $balita->count();
-        $totalAnggota = $totalBalita + 1; // Warga + Balita
-        $totalLansia = $anggotaKeluarga->where('kategori', 'lansia')->count();
-        $totalRemaja = $anggotaKeluarga->where('kategori', 'remaja')->count();
-        $totalIbuHamil = $anggotaKeluarga->where('kategori', 'ibu_hamil')->count();
-        $totalIbuMenyusui = $anggotaKeluarga->where('kategori', 'ibu_menyusui')->count();
-
-        $totalPelayanan = PemeriksaanBalita::whereHas('balita', function ($query) use ($warga) {
-            $query->where('warga_id', $warga->id);
+        $jumlahAnakAktif = $warga->anak()->where('status_anak', 'aktif')->count();
+        $jumlahBalita    = $warga->anak()->balita()->count();
+        $totalPelayanan  = PemeriksaanBalita::whereHas('balita', function ($q) use ($warga) {
+            $q->where('warga_id', $warga->id);
         })->count();
 
         // Progress kelengkapan data
-        $totalFields = 10;
+        $totalFields  = 10;
         $filledFields = 0;
 
-        if ($warga->nik) $filledFields++;
-        if ($warga->nomor_kk) $filledFields++;
-        if ($warga->tanggal_lahir) $filledFields++;
-        if ($warga->jenis_kelamin) $filledFields++;
-        if ($warga->alamat) $filledFields++;
-        if ($warga->telepon) $filledFields++;
-        if ($warga->ktp_path) $filledFields++;
-        if ($warga->kk_path) $filledFields++;
+        if ($warga->nik)              $filledFields++;
+        if ($warga->nomor_kk)         $filledFields++;
+        if ($warga->tanggal_lahir)    $filledFields++;
+        if ($warga->jenis_kelamin)    $filledFields++;
+        if ($warga->alamat)           $filledFields++;
+        if ($warga->telepon)          $filledFields++;
+        if ($warga->ktp_path)         $filledFields++;
+        if ($warga->kk_path)          $filledFields++;
         if ($warga->verification_status === 'verified') $filledFields++;
-        if ($warga->email) $filledFields++;
+        if ($warga->email)            $filledFields++;
 
         $progress = round(($filledFields / $totalFields) * 100);
 
         return [
-            'kepala_keluarga' => $warga->nama,
-            'total_anggota' => $totalAnggota,
-            'total_balita' => $totalBalita,
-            'total_lansia' => $totalLansia,
-            'total_remaja' => $totalRemaja,
-            'total_ibu_hamil' => $totalIbuHamil,
-            'total_ibu_menyusui' => $totalIbuMenyusui,
-            'total_pelayanan' => $totalPelayanan,
-            'progress' => $progress,
-            'updated_at' => $warga->updated_at->format('d M Y H:i'),
-            'verification_status' => $warga->verification_status,
-            'is_complete' => $progress >= 80,
+            'kepala_keluarga'    => $warga->nama,
+            'total_anak'         => $jumlahAnakAktif,
+            'total_balita'       => $jumlahBalita,
+            'total_pelayanan'    => $totalPelayanan,
+            'is_hamil'           => in_array('kehamilan', $categories),
+            'is_menyusui'        => in_array('menyusui', $categories),
+            'is_remaja'          => in_array('remaja', $categories),
+            'is_lansia'          => in_array('lansia', $categories),
+            'is_wus'             => in_array('wus', $categories),
+            'progress'           => $progress,
+            'updated_at'         => $warga->updated_at->format('d M Y H:i'),
+            'verification_status'=> $warga->verification_status,
+            'is_complete'        => $progress >= 80,
         ];
     }
 

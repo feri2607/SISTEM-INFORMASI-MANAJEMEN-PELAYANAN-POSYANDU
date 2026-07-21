@@ -65,13 +65,12 @@
                 <span class="text-xl">👤</span> Data Lansia
             </h2>
             @if(!$lansia)
-                <a href="{{ route('warga.lansia.create') }}"
-                   class="inline-flex items-center gap-2 px-4 py-2 bg-[#036672] hover:bg-[#036672] text-white text-sm font-medium rounded-lg transition-colors">
+                <span class="inline-flex items-center gap-2 px-4 py-2 bg-teal-50 text-teal-700 text-xs font-semibold rounded-lg border border-teal-100">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    Tambah Data Lansia
-                </a>
+                    Tergabung Secara Otomatis
+                </span>
             @endif
         </div>
 
@@ -119,27 +118,11 @@
                 </div>
 
                 {{-- Actions (only before verified) --}}
-                @if(!$lansia->is_verified)
-                    <div class="mt-5 pt-5 border-t border-gray-200 dark:border-gray-700 flex gap-3">
-                        <a href="{{ route('warga.lansia.edit', $lansia) }}"
-                           class="inline-flex items-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium rounded-lg transition-colors">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                            </svg>
-                            Edit Data
-                        </a>
-                        <p class="self-center text-xs text-amber-600 dark:text-amber-400 italic">Data dapat diedit sebelum diverifikasi oleh pegawai.</p>
-                    </div>
-                @else
                     <div class="mt-5 pt-5 border-t border-gray-200 dark:border-gray-700">
                         <p class="text-xs text-gray-500 dark:text-gray-400 italic">
-                            ✅ Data telah diverifikasi — hanya dapat diubah oleh pegawai.
-                            @if($lansia->verified_at)
-                                Terverifikasi pada {{ $lansia->verified_at->format('d M Y H:i') }}.
-                            @endif
+                            Untuk memperbarui data alamat, golongan darah, nomor telepon, maupun riwayat penyakit, ubah di halaman <strong><a href="{{ route('profile.index') }}" class="underline font-bold text-teal-600">Profil Saya</a></strong>.
                         </p>
                     </div>
-                @endif
             </div>
         @else
             {{-- Empty State --}}
@@ -147,12 +130,12 @@
                 <div class="text-5xl mb-4">👴</div>
                 <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">Belum terdapat data lansia.</h3>
                 <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Daftarkan data lansia untuk mulai mendapatkan layanan Posyandu Lansia.</p>
-                <a href="{{ route('warga.lansia.create') }}"
+                <a href="{{ route('profile.index') }}"
                    class="inline-flex items-center gap-2 px-6 py-3 bg-[#036672] hover:bg-[#036672] text-white font-medium rounded-xl transition-colors shadow-md hover:shadow-lg">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
-                    Tambah Data Lansia
+                    Lengkapi Profil Saya
                 </a>
             </div>
         @endif

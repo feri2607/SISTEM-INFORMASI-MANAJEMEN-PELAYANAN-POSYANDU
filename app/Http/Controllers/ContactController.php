@@ -9,6 +9,7 @@ use App\Models\Faq;
 use App\Http\Requests\ContactRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
 
 class ContactController extends Controller
@@ -145,6 +146,43 @@ class ContactController extends Controller
 
         return redirect()->route('admin.contact.messages')
             ->with('success', 'Pesan berhasil dihapus.');
+    }
+
+    /**
+     * Admin: Reply to a message by sending email
+     */
+    public function replyMessage(Request $request, $id)
+    {
+        $message = ContactMessage::findOrFail($id);
+        $this->authorize('view', $message);
+
+        $request->validate([
+            'reply_body' => ['required', 'string', 'min:5'],
+        ], [
+            'reply_body.required' => 'Isi balasan tidak boleh kosong.',
+            'reply_body.min'      => 'Balasan minimal 5 karakter.',
+        ]);
+
+        try {
+            Mail::raw($request->reply_body, function ($mail) use ($message) {
+                $mail->to($message->email, $message->name)
+                     ->subject('Re: ' . $message->subject)
+                     ->from(config('mail.from.address'), config('mail.from.name') ?: 'Admin Posyandu');
+            });
+
+            // Auto-mark as read after replying
+            if (!$message->is_read) {
+                $message->update(['is_read' => true]);
+                Cache::forget('unread_messages_count');
+            }
+
+            return redirect()->route('admin.contact.message.show', $id)
+                ->with('success', 'Balasan berhasil dikirim ke ' . $message->email . '.');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Gagal mengirim email: ' . $e->getMessage())
+                ->withInput();
+        }
     }
 
     /**

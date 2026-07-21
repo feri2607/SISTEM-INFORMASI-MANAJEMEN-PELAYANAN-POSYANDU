@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Hash;
 
 class WargaController extends Controller
 {
@@ -70,7 +71,7 @@ class WargaController extends Controller
 
         // Stats
         $stats = [
-            'total' => Warga::when($user->role === 'user', function ($q) use ($user) {
+            'total'     => Warga::when($user->role === 'user', function ($q) use ($user) {
                 return $q->where('user_id', $user->id);
             })->count(),
             'laki_laki' => Warga::when($user->role === 'user', function ($q) use ($user) {
@@ -79,6 +80,9 @@ class WargaController extends Controller
             'perempuan' => Warga::when($user->role === 'user', function ($q) use ($user) {
                 return $q->where('user_id', $user->id);
             })->where('jenis_kelamin', 'P')->count(),
+            'verified'  => Warga::when($user->role === 'user', function ($q) use ($user) {
+                return $q->where('user_id', $user->id);
+            })->where('verification_status', 'verified')->count(),
         ];
 
         // Get wilayah for filters
@@ -116,7 +120,22 @@ class WargaController extends Controller
         $this->authorize('create', Warga::class);
 
         $data = $request->validated();
-        $data['user_id'] = $request->user_id ?? Auth::id();
+        
+        // 1. Generate random password
+        $tempPassword = Str::random(8);
+
+        // 2. Create User account automatically
+        $userWarga = User::updateOrCreate(
+            ['email' => $data['nik']], // use NIK as the login credential
+            [
+                'name' => $data['nama'],
+                'password' => Hash::make($tempPassword),
+                'role' => 'user', 
+                'email_verified_at' => now(), // Auto verify since created by pegawai
+            ]
+        );
+
+        $data['user_id'] = $userWarga->id;
 
         if ($request->hasFile('foto')) {
             $file = $request->file('foto');
@@ -128,7 +147,12 @@ class WargaController extends Controller
         $warga = Warga::create($data);
 
         return redirect()->route(Auth::user()->role . '.warga.index')
-            ->with('success', 'Data warga berhasil ditambahkan.');
+            ->with('success', 'Data warga berhasil ditambahkan.')
+            ->with('warga_created', [
+                'nama' => $userWarga->name,
+                'nik' => $data['nik'],
+                'password_sementara' => $tempPassword
+            ]);
     }
 
     /**
@@ -209,6 +233,23 @@ class WargaController extends Controller
     public function update(WargaRequest $request, Warga $warga)
     {
         $this->authorize('update', $warga);
+
+        if ($request->has('action_reset_password')) {
+            if (!$warga->user) {
+                return back()->with('error', 'Warga ini belum memiliki akun login.');
+            }
+            
+            $tempPassword = Str::random(8);
+            $warga->user->update([
+                'password' => Hash::make($tempPassword)
+            ]);
+            
+            return back()->with('warga_created', [
+                'nama' => $warga->nama,
+                'nik' => $warga->nik,
+                'password_sementara' => $tempPassword
+            ])->with('success', 'Berhasil mereset password warga.');
+        }
 
         $data = $request->validated();
 

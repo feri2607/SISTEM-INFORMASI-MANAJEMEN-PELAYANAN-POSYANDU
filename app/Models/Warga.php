@@ -49,11 +49,15 @@ class Warga extends Model
         'verified_by',
         'verified_at',
         'rejected_reason',
+        // Data Kesehatan
+        'status_kehamilan',
+        'status_menyusui',
+        'catatan_kesehatan',
     ];
 
     protected $casts = [
         'tanggal_lahir' => 'date',
-        'verified_at' => 'datetime',
+        'verified_at'   => 'datetime',
     ];
 
     // Relationships
@@ -70,6 +74,11 @@ class Warga extends Model
     public function balita()
     {
         return $this->hasMany(Balita::class);
+    }
+
+    public function anak()
+    {
+        return $this->hasMany(Anak::class);
     }
 
     // Accessors
@@ -188,5 +197,36 @@ class Warga extends Model
     public function isComplete()
     {
         return $this->verification_status !== 'belum_lengkap';
+    }
+
+    // =============================================
+    // Health Status Helpers
+    // =============================================
+
+    public function isHamil(): bool
+    {
+        return $this->status_kehamilan === 'ya';
+    }
+
+    public function isMenyusui(): bool
+    {
+        return $this->status_menyusui === 'ya';
+    }
+
+    /**
+     * Cek apakah warga memiliki anak yang masuk kategori Balita (< 5 tahun)
+     * Tidak menyimpan kolom — selalu dihitung langsung dari tabel anak.
+     */
+    public function hasBalita(): bool
+    {
+        return $this->anak()->balita()->exists();
+    }
+
+    /**
+     * Hitung jumlah anak secara dinamis — tidak ada kolom jumlah_anak.
+     */
+    public function jumlahAnakAktif(): int
+    {
+        return $this->anak()->where('status_anak', 'aktif')->count();
     }
 }

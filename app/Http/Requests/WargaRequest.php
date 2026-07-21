@@ -15,6 +15,11 @@ class WargaRequest extends FormRequest
 
     public function rules(): array
     {
+        // Jika request ini adalah untuk reset password, bypass semua validasi form normal
+        if ($this->has('action_reset_password')) {
+            return [];
+        }
+
         $warga = $this->route('warga') ?? auth()->user()->warga ?? null;
 
         return [
@@ -53,7 +58,12 @@ class WargaRequest extends FormRequest
 
             // Dokumen
             'ktp_path' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
-            'kk_path' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
+            'kk_path'  => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
+
+            // Data Kesehatan
+            'status_kehamilan'  => ['nullable', Rule::in(['ya', 'tidak'])],
+            'status_menyusui'   => ['nullable', Rule::in(['ya', 'tidak'])],
+            'catatan_kesehatan' => ['nullable', 'string', 'max:1000'],
         ];
     }
 

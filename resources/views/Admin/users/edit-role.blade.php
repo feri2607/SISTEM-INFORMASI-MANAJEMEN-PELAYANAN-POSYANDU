@@ -29,7 +29,8 @@
                     <select id="role" name="role"
                         class="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white">
                         <option value="admin" {{ $user->role === 'admin' ? 'selected' : '' }}>Admin</option>
-                        <option value="user" {{ $user->role === 'user' ? 'selected' : '' }}>Kader</option>
+                        <option value="pegawai" {{ $user->role === 'pegawai' ? 'selected' : '' }}>Pegawai</option>
+                        <option value="warga" {{ $user->role === 'warga' ? 'selected' : '' }}>Warga</option>
                     </select>
                     @error('role')
                         <p class="mt-1.5 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
@@ -55,7 +56,8 @@
         <script>
             function confirmUpdate() {
                 const role = document.getElementById('role').value;
-                const roleLabel = role === 'admin' ? 'Admin' : 'Kader';
+                const labels = { admin: 'Admin', pegawai: 'Pegawai', warga: 'Warga', user: 'User' };
+                const roleLabel = labels[role] || role;
 
                 return Swal.fire({
                     title: 'Ubah Role?',

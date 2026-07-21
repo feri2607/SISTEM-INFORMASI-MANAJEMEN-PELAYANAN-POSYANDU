@@ -14,8 +14,7 @@
             <form method="POST" action="{{ route('admin.announcements.store') }}" 
                   enctype="multipart/form-data"
                   x-data="announcementForm()"
-                  x-ref="form"
-                  @submit.prevent="submitForm">
+                  @submit="submitForm($event)">
                 @csrf
 
                 <div class="space-y-6">
@@ -172,7 +171,7 @@
                         <input type="file" name="attachment" id="attachment" 
                                accept=".pdf,.docx,.xlsx,.png,.jpg,.jpeg,.webp"
                                class="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-gray-900 dark:text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100 dark:file:bg-yellow-900/30 dark:file:text-yellow-400">
-                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Format: PDF, DOCX, XLSX, PNG, JPG, JPEG, WEBP (Maks. 5MB)</p>
+                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Format: PDF, DOCX, XLSX, PNG, JPG, JPEG, WEBP (Maks. 20MB)</p>
                         @error('attachment')
                             <p class="mt-1.5 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                         @enderror
@@ -279,9 +278,9 @@
                         .replace(/-+/g, '-');
                 }
             },
-            submitForm() {
+            submitForm(event) {
                 this.loading = true;
-                this.$refs.form.submit();
+                // Let the native form submit proceed
             }
         }
     }

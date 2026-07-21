@@ -174,7 +174,18 @@ class BalitaController extends Controller
         // Automatically verify since this is added by Admin/Pegawai
         $data['is_verified'] = true;
 
-        Balita::create($data);
+        $balita = Balita::create($data);
+
+        // Auto-sync ke tabel Anak agar muncul di halaman Profil/Warga (Single Source of Truth)
+        \App\Models\Anak::firstOrCreate([
+            'warga_id' => $data['warga_id'],
+            'nama' => $data['nama'],
+        ], [
+            'nik' => $data['nik'] ?? null,
+            'tanggal_lahir' => $data['tanggal_lahir'],
+            'jenis_kelamin' => $data['jenis_kelamin'],
+            'status_anak' => 'aktif',
+        ]);
 
         return redirect()->route($user->role . '.balita.index')
             ->with('success', 'Data balita berhasil ditambahkan.');
@@ -245,7 +256,19 @@ class BalitaController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
+        $oldNama = $balita->getOriginal('nama');
         $balita->update($data);
+
+        // Auto-sync update ke tabel Anak jika namanya sama
+        $anak = \App\Models\Anak::where('warga_id', $warga->id)->where('nama', $oldNama)->first();
+        if ($anak) {
+            $anak->update([
+                'nama' => $data['nama'],
+                'nik' => $data['nik'] ?? $anak->nik,
+                'tanggal_lahir' => $data['tanggal_lahir'],
+                'jenis_kelamin' => $data['jenis_kelamin'],
+            ]);
+        }
 
         return redirect()->route($user->role . '.balita.index')
             ->with('success', 'Data balita berhasil diperbarui.');

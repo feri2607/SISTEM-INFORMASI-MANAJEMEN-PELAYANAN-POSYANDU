@@ -110,7 +110,7 @@
                     {{-- Decorative blur --}}
                     <div class="absolute -top-24 -right-24 w-48 h-48 bg-blue-50 rounded-full mix-blend-multiply filter blur-2xl opacity-70"></div>
                     
-                    <form method="POST" action="{{ route('contact.send') }}" x-data="contactForm()" @submit.prevent="submitForm" class="relative z-10">
+                    <form method="POST" action="{{ route('contact.send') }}" x-data="contactForm()" @submit="submitForm($event)" class="relative z-10">
                         @csrf
                         
                         <h3 class="text-xl font-bold text-slate-800 mb-8 hidden">Kirim Pesan</h3>
@@ -291,9 +291,9 @@
                 subject: '{{ old('subject') }}',
                 message: '{{ old('message') }}'
             },
-            submitForm() {
+            submitForm(event) {
                 this.loading = true;
-                this.$refs.form.submit();
+                // Let the native form submit proceed
             }
         }
     }

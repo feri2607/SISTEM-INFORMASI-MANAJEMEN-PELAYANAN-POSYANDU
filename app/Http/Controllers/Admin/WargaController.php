@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class WargaController extends Controller
@@ -35,6 +36,11 @@ class WargaController extends Controller
             });
         }
 
+        // Filter gender
+        if ($request->filled('gender')) {
+            $query->where('jenis_kelamin', $request->gender);
+        }
+
         // Filter status
         if ($request->filled('status')) {
             $query->where('verification_status', $request->status);
@@ -49,11 +55,12 @@ class WargaController extends Controller
 
         // Stats
         $stats = [
-            'total' => Warga::count(),
+            'total'     => Warga::count(),
             'laki_laki' => Warga::where('jenis_kelamin', 'L')->count(),
             'perempuan' => Warga::where('jenis_kelamin', 'P')->count(),
+            'verified'  => Warga::where('verification_status', 'verified')->count(),
         ];
-        $routePrefix = 'admin.warga.';
+        $routePrefix = Auth::user()->role === 'admin' ? 'admin.warga.' : 'pegawai.warga.';
 
         $provinsiList = \App\Models\Wilayah::where('tingkat', 'provinsi')->get();
 
@@ -85,7 +92,7 @@ class WargaController extends Controller
                 return $balita->pelayanan;
             })->sortByDesc('created_at')->first(),
         ];
-        $routePrefix = 'admin.warga.';
+        $routePrefix = Auth::user()->role === 'admin' ? 'admin.warga.' : 'pegawai.warga.';
 
         return view('Admin.warga.show', compact('warga', 'stats', 'routePrefix'));
     }
@@ -103,7 +110,7 @@ class WargaController extends Controller
             'cerai_mati' => 'Cerai Mati',
         ];
 
-        $routePrefix = 'admin.warga.';
+        $routePrefix = Auth::user()->role === 'admin' ? 'admin.warga.' : 'pegawai.warga.';
 
         return view('Admin.warga.create', compact('users', 'provinsi', 'statusPerkawinan', 'routePrefix'));
     }
@@ -113,7 +120,25 @@ class WargaController extends Controller
         $this->authorize('create', Warga::class);
 
         $data = $request->validated();
-        $data['user_id'] = $request->user_id ?? Auth::id();
+        
+        // 1. Generate random password (8 chars)
+        $tempPassword = Str::random(8);
+
+        // 2. Create User account automatically (NIK as email/username)
+        // If they entered an email, we can save it, but the login field is 'email' column, 
+        // so we save NIK into 'email' column so they can log in using NIK.
+        // We'll append an identifier or just use NIK directly. Actually, NIK is safest.
+        $userWarga = User::updateOrCreate(
+            ['email' => $data['nik']], // use NIK as the login identifier
+            [
+                'name' => $data['nama'],
+                'password' => Hash::make($tempPassword),
+                'role' => 'user', 
+                'email_verified_at' => now(), // Auto verify since created by admin
+            ]
+        );
+
+        $data['user_id'] = $userWarga->id;
 
         if ($request->hasFile('foto')) {
             $file = $request->file('foto');
@@ -124,8 +149,13 @@ class WargaController extends Controller
 
         $warga = Warga::create($data);
 
-        return redirect()->route('admin.warga.index')
-            ->with('success', 'Data warga berhasil ditambahkan.');
+        return redirect()->route(Auth::user()->role === 'admin' ? 'admin.warga.index' : 'pegawai.warga.index')
+            ->with('success', 'Data warga berhasil ditambahkan.')
+            ->with('warga_created', [
+                'nama' => $userWarga->name,
+                'nik' => $data['nik'],
+                'password_sementara' => $tempPassword
+            ]);
     }
 
     public function edit(Warga $warga)
@@ -151,7 +181,7 @@ class WargaController extends Controller
             'cerai_mati' => 'Cerai Mati',
         ];
 
-        $routePrefix = 'admin.warga.';
+        $routePrefix = Auth::user()->role === 'admin' ? 'admin.warga.' : 'pegawai.warga.';
 
         return view('Admin.warga.edit', compact(
             'warga',
@@ -168,6 +198,23 @@ class WargaController extends Controller
     public function update(WargaRequest $request, Warga $warga)
     {
         $this->authorize('update', $warga);
+
+        if ($request->has('action_reset_password')) {
+            if (!$warga->user) {
+                return back()->with('error', 'Warga ini belum memiliki akun login.');
+            }
+            
+            $tempPassword = Str::random(8);
+            $warga->user->update([
+                'password' => Hash::make($tempPassword)
+            ]);
+            
+            return back()->with('warga_created', [
+                'nama' => $warga->nama,
+                'nik' => $warga->nik,
+                'password_sementara' => $tempPassword
+            ])->with('success', 'Berhasil mereset password warga.');
+        }
 
         $data = $request->validated();
 
@@ -197,7 +244,7 @@ class WargaController extends Controller
 
         $warga->update($data);
 
-        return redirect()->route('admin.warga.index')
+        return redirect()->route(Auth::user()->role === 'admin' ? 'admin.warga.index' : 'pegawai.warga.index')
             ->with('success', 'Data warga berhasil diperbarui.');
     }
 
@@ -223,7 +270,7 @@ class WargaController extends Controller
                 $warga->forceDelete();
             });
 
-            return redirect()->route('admin.warga.index')
+            return redirect()->route(Auth::user()->role === 'admin' ? 'admin.warga.index' : 'pegawai.warga.index')
                 ->with('success', 'Data warga berhasil dihapus secara permanen.');
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::error('Gagal hapus warga (Admin)', [
@@ -295,5 +342,23 @@ class WargaController extends Controller
 
         return redirect()->back()
             ->with('success', 'Data warga berhasil ditolak.');
+    }
+
+    /**
+     * Export to Excel
+     */
+    public function exportExcel(Request $request)
+    {
+        // Implement Excel export
+        return back()->with('info', 'Fitur export Excel sedang dalam pengembangan.');
+    }
+
+    /**
+     * Export to PDF
+     */
+    public function exportPdf(Request $request)
+    {
+        // Implement PDF export
+        return back()->with('info', 'Fitur export PDF sedang dalam pengembangan.');
     }
 }

@@ -78,24 +78,64 @@
                 </div>
             </div>
 
-            {{-- Reply Button --}}
-            <div class="flex flex-wrap items-center gap-3 pt-6 border-t border-gray-200 dark:border-gray-700">
-                <a href="mailto:{{ $message->email }}?subject=Re: {{ $message->subject }}" 
-                   class="px-4 py-2 bg-[#036672] hover:bg-[#036672] text-white font-medium rounded-lg transition duration-150 flex items-center">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+            {{-- Flash Messages --}}
+            @if(session('success'))
+                <div class="mt-4 p-4 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 rounded-lg text-sm border border-green-200 dark:border-green-800">
+                    ✅ {{ session('success') }}
+                </div>
+            @endif
+            @if(session('error'))
+                <div class="mt-4 p-4 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 rounded-lg text-sm border border-red-200 dark:border-red-800">
+                    ❌ {{ session('error') }}
+                </div>
+            @endif
+
+            {{-- Reply Form --}}
+            <form method="POST" action="{{ route('admin.contact.message.reply', $message->id) }}"
+                  class="mt-6 border-t border-gray-200 dark:border-gray-700 pt-6">
+                @csrf
+                <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
+                    <svg class="w-4 h-4 text-[#036672]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
                     </svg>
-                    Balas Email
-                </a>
-                <a href="{{ route('admin.contact.messages') }}" 
-                   class="px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg transition duration-150 flex items-center">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-                    </svg>
-                    Kembali
-                </a>
-            </div>
+                    Balas Pesan
+                </h4>
+
+                <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                    <div class="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                        Kepada: <span class="font-medium text-gray-700 dark:text-gray-300">{{ $message->name }}</span>
+                        &lt;<span class="text-blue-600 dark:text-blue-400">{{ $message->email }}</span>&gt;
+                    </div>
+                    <div class="mb-3 text-sm text-gray-500 dark:text-gray-400">
+                        Subjek: <span class="font-medium text-gray-700 dark:text-gray-300">Re: {{ $message->subject }}</span>
+                    </div>
+                    <textarea name="reply_body" rows="6"
+                              class="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg text-sm text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-[#036672]/30 focus:border-[#036672] outline-none resize-y transition-all @error('reply_body') border-red-400 @enderror"
+                              placeholder="Tulis balasan Anda di sini...">{{ old('reply_body') }}</textarea>
+                    @error('reply_body')
+                        <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                {{-- Action Buttons --}}
+                <div class="flex flex-wrap items-center gap-3 mt-4">
+                    <button type="submit"
+                            class="px-5 py-2.5 bg-[#036672] hover:bg-[#025560] text-white text-sm font-medium rounded-lg transition duration-150 flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                        </svg>
+                        Kirim Balasan
+                    </button>
+                    <a href="{{ route('admin.contact.messages') }}"
+                       class="px-5 py-2.5 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg transition duration-150 flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                        </svg>
+                        Kembali
+                    </a>
+                </div>
+            </form>
         </div>
     </div>
 </div>
-@endsection 
+@endsection

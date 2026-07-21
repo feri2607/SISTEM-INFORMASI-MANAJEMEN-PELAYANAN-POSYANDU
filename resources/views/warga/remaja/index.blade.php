@@ -22,12 +22,12 @@
                 <p class="text-gray-600 text-[15px] max-w-xl leading-relaxed">Pantau perkembangan kesehatan fisik dan mental remaja secara berkala untuk masa depan yang lebih cerah.</p>
             </div>
             
-            <a href="{{ route('warga.remaja.create') }}" class="inline-flex items-center px-7 py-3.5 bg-[#036672] hover:bg-[#036672] text-white text-[15px] font-semibold rounded-full shadow-[0_8px_16px_rgba(0,107,77,0.2)] transition-all duration-200 transform hover:-translate-y-0.5">
+            <div class="inline-flex items-center px-5 py-2.5 bg-emerald-50 text-emerald-800 text-[13px] font-semibold rounded-full border border-emerald-200 shadow-sm">
                 <svg class="w-5 h-5 mr-2 stroke-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
-                Tambah Profil Remaja
-            </a>
+                Terdaftar Otomatis Berdasarkan Usia
+            </div>
         </div>
 
         {{-- Alerts --}}
@@ -343,11 +343,11 @@
                 <h3 class="text-[24px] font-black text-gray-900 mb-3 relative z-10">Belum Ada Profil Remaja Tersimpan</h3>
                 <p class="text-[15px] font-medium text-gray-500 mb-8 max-w-md mx-auto relative z-10 leading-relaxed">Mulai pantau kesehatan remaja Anda secara komprehensif dengan menambahkan profil sekarang juga.</p>
                 
-                <a href="{{ route('warga.remaja.create') }}" class="inline-flex items-center px-8 py-4 bg-[#006B4D] hover:bg-[#005139] text-white text-[15px] font-bold rounded-full shadow-[0_12px_24px_rgba(0,107,77,0.25)] transition-all duration-200 hover:-translate-y-1 relative z-10">
+                <a href="{{ route('profile.index') }}" class="inline-flex items-center px-8 py-4 bg-[#006B4D] hover:bg-[#005139] text-white text-[15px] font-bold rounded-full shadow-[0_12px_24px_rgba(0,107,77,0.25)] transition-all duration-200 hover:-translate-y-1 relative z-10">
                     <svg class="w-5 h-5 mr-3 pr-2 border-r border-[#009b70]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                     </svg>
-                    Tambah Profil Remaja Pertama Anda
+                    Lengkapi Profil Saya
                 </a>
             </div>
         @endif

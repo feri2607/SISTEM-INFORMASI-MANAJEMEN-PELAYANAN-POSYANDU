@@ -20,9 +20,9 @@
             </div>
             <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Belum Terdapat Data Kehamilan</h3>
             <p class="text-gray-500 dark:text-gray-400 mb-8 max-w-md mx-auto">Silakan tambahkan data profil ibu hamil untuk mulai memantau perkembangan kehamilan dan melihat info gizi.</p>
-            <a href="{{ route('warga.kehamilan.create') }}" class="inline-flex items-center gap-2 px-6 py-3 bg-[#036672] hover:bg-[#036672] text-white rounded-xl font-medium shadow-sm transition">
+            <a href="{{ route('profile.index') }}" class="inline-flex items-center gap-2 px-6 py-3 bg-[#036672] hover:bg-[#036672] text-white rounded-xl font-medium shadow-sm transition">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                Tambah Data Kehamilan
+                Perbarui Status Kehamilan (Profil Saya)
             </a>
         </div>
     @else

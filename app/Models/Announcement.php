@@ -51,7 +51,7 @@ class Announcement extends Model
     // Accessors
     public function getAttachmentUrlAttribute()
     {
-        if ($this->attachment && Storage::disk('public')->exists('announcements/' . $this->attachment)) {
+        if ($this->attachment) {
             return Storage::url('announcements/' . $this->attachment);
         }
         return null;
