@@ -22,7 +22,19 @@ class AnnouncementController extends Controller
     public function index(Request $request)
     {
         $query = Announcement::with(['category', 'user'])
-            ->where('status', 'published');
+            ->where(function ($q) {
+                $q->where('status', 'published')
+                  ->orWhere(function ($q2) {
+                      // scheduled announcements whose publish time has arrived
+                      $q2->where('status', 'scheduled')
+                         ->where('publish_at', '<=', now());
+                  });
+            })
+            ->where(function ($q) {
+                // Not yet expired
+                $q->whereNull('expire_at')
+                  ->orWhere('expire_at', '>=', now());
+            });
 
 
         // Search

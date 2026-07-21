@@ -28,6 +28,7 @@ use App\Http\Controllers\Pegawai\LansiaController as PegawaiLansiaController;
 use App\Http\Controllers\Pegawai\RemajaController as PegawaiRemajaController;
 use App\Http\Controllers\Pegawai\WusController as PegawaiWusController;
 use App\Http\Controllers\Profile\ProfileController as WargaProfileController;
+use App\Http\Controllers\Warga\AnakController as WargaAnakController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\Warga\BalitaController as WargaBalitaController;
@@ -219,6 +220,7 @@ Route::middleware(['auth', 'verified', 'role:admin'])
         Route::get('/pesan/{id}', [ContactController::class, 'showMessage'])->name('contact.message.show');
         Route::delete('/pesan/{id}', [ContactController::class, 'deleteMessage'])->name('contact.message.delete');
         Route::patch('/pesan/{id}/read', [ContactController::class, 'markAsRead'])->name('contact.message.read');
+        Route::post('/pesan/{id}/reply', [ContactController::class, 'replyMessage'])->name('contact.message.reply');
         Route::patch('/pesan/mark-all-read', [ContactController::class, 'markAllAsRead'])->name('contact.mark-all-read');
     });
 
@@ -406,12 +408,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
                 Route::get(
                     'warga/excel',
-                    [WargaController::class, 'exportExcel']
+                    [AdminWargaController::class, 'exportExcel']
                 )->name('warga.excel');
 
                 Route::get(
                     'warga/pdf',
-                    [WargaController::class, 'exportPdf']
+                    [AdminWargaController::class, 'exportPdf']
                 )->name('warga.pdf');
 
                 Route::get(
@@ -464,9 +466,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('profil-saya', [ProfileController::class, 'show'])->name('profile.index');
 
             // Warga
-            Route::resource('warga', WargaController::class);
-            Route::patch('warga/{warga}/verify', [WargaController::class, 'verify'])->name('warga.verify');
-            Route::patch('warga/{warga}/reject', [WargaController::class, 'reject'])->name('warga.reject');
+            Route::resource('warga', AdminWargaController::class);
+            Route::patch('warga/{warga}/verify', [AdminWargaController::class, 'verify'])->name('warga.verify');
+            Route::patch('warga/{warga}/reject', [AdminWargaController::class, 'reject'])->name('warga.reject');
 
             // Balita Management - menggunakan BalitaController yang sama
             Route::resource('balita', BalitaController::class)->parameters(['balita' => 'balita']);
@@ -741,6 +743,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::patch('/preferences', [WargaProfileController::class, 'updatePreferences'])->name('update-preferences');
             Route::delete('/account', [WargaProfileController::class, 'deleteAccount'])->name('delete-account');
             Route::get('/activities', [WargaProfileController::class, 'getLoginActivities'])->name('activities');
+
+            // Data Anak (CRUD via Profil Saya)
+            Route::get('/anak', [WargaAnakController::class, 'index'])->name('anak.index');
+            Route::get('/anak/tambah', [WargaAnakController::class, 'create'])->name('anak.create');
+            Route::post('/anak', [WargaAnakController::class, 'store'])->name('anak.store');
+            Route::get('/anak/{anak}/ubah', [WargaAnakController::class, 'edit'])->name('anak.edit');
+            Route::put('/anak/{anak}', [WargaAnakController::class, 'update'])->name('anak.update');
+            Route::delete('/anak/{anak}', [WargaAnakController::class, 'destroy'])->name('anak.destroy');
         });
 });
 

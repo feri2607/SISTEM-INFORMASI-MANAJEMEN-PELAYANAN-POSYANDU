@@ -32,13 +32,19 @@ class WargaController extends Controller
             });
         }
 
+        // Filter gender
+        if ($request->filled('gender')) {
+            $query->where('jenis_kelamin', $request->gender);
+        }
+
         $warga = $query->paginate(10);
 
         // Stats
         $stats = [
-            'total' => Warga::count(),
+            'total'     => Warga::count(),
             'laki_laki' => Warga::where('jenis_kelamin', 'L')->count(),
             'perempuan' => Warga::where('jenis_kelamin', 'P')->count(),
+            'verified'  => Warga::where('verification_status', 'verified')->count(),
         ];
         $routePrefix = 'kader.warga.';
         

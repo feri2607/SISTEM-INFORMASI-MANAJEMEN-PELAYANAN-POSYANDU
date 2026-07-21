@@ -108,6 +108,21 @@
                             <p class="font-bold text-sm">Dokumen</p>
                         </div>
                     </button>
+
+                    <!-- Step 5 -->
+                    <button type="button" @click="activeTab = 'kesehatan'" 
+                            class="w-full text-left p-4 rounded-xl border-2 transition-all duration-200 flex items-center space-x-4"
+                            :class="activeTab === 'kesehatan' ? 'border-[#0a358c] bg-white text-[#0a358c] shadow-sm' : 'border-gray-100 bg-white shadow-sm text-gray-600 hover:border-gray-300'">
+                        <div class="flex-shrink-0">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-[11px] font-bold uppercase tracking-wider mb-0.5" :class="activeTab === 'kesehatan' ? 'text-[#0a358c]' : 'text-gray-400'">LANGKAH 5</p>
+                            <p class="font-bold text-sm">Data Kesehatan</p>
+                        </div>
+                    </button>
                 </div>
 
                 {{-- Help Widget --}}
@@ -599,6 +614,99 @@
                         <div class="flex flex-wrap items-center justify-between gap-3 mt-8 pt-6 border-t border-gray-200">
                             <div>
                                 <button type="button" @click="activeTab = 'administrasi'" 
+                                        class="px-6 py-2.5 text-gray-700 bg-gray-100 hover:bg-gray-200 font-semibold rounded-lg transition duration-200 flex items-center">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                                    </svg>
+                                    Sebelumnya
+                                </button>
+                            </div>
+                            <div class="flex flex-wrap gap-3">
+                                <button type="button" @click="activeTab = 'kesehatan'" 
+                                        class="px-8 py-2.5 bg-[#0a358c] hover:bg-[#06215b] text-white font-semibold rounded-lg transition duration-200 flex items-center">
+                                    Selanjutnya
+                                    <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Tab 5: Data Kesehatan --}}
+                    <div x-show="activeTab === 'kesehatan'" style="display: none;" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0">
+                        <div class="mb-6 pb-4 border-b border-gray-100">
+                            <h2 class="text-xl font-bold text-[#0a358c] mb-1">Data Kesehatan</h2>
+                            <p class="text-sm text-gray-500">Isi status kehamilan atau kondisi kesehatan (opsional) untuk menyesuaikan layanan di Posyandu Anda.</p>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+                            {{-- Status Kehamilan --}}
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">
+                                    Status Kehamilan <span class="text-red-500">*</span>
+                                </label>
+                                <div class="flex items-center space-x-6 mt-1">
+                                    <label class="flex items-center cursor-pointer">
+                                        <input type="radio" name="status_kehamilan" value="ya" 
+                                               class="w-4 h-4 text-[#0a358c] focus:ring-[#0a358c] border-gray-300"
+                                               {{ old('status_kehamilan') == 'ya' ? 'checked' : '' }}>
+                                        <span class="ml-2 text-sm text-gray-700">Ya, sedang hamil</span>
+                                    </label>
+                                    <label class="flex items-center cursor-pointer">
+                                        <input type="radio" name="status_kehamilan" value="tidak" 
+                                               class="w-4 h-4 text-[#0a358c] focus:ring-[#0a358c] border-gray-300"
+                                               {{ old('status_kehamilan') == 'tidak' || old('status_kehamilan') == null ? 'checked' : '' }}>
+                                        <span class="ml-2 text-sm text-gray-700">Tidak</span>
+                                    </label>
+                                </div>
+                                @error('status_kehamilan')
+                                    <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            {{-- Status Menyusui --}}
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">
+                                    Status Menyusui <span class="text-red-500">*</span>
+                                </label>
+                                <div class="flex items-center space-x-6 mt-1">
+                                    <label class="flex items-center cursor-pointer">
+                                        <input type="radio" name="status_menyusui" value="ya" 
+                                               class="w-4 h-4 text-[#0a358c] focus:ring-[#0a358c] border-gray-300"
+                                               {{ old('status_menyusui') == 'ya' ? 'checked' : '' }}>
+                                        <span class="ml-2 text-sm text-gray-700">Ya, sedang menyusui</span>
+                                    </label>
+                                    <label class="flex items-center cursor-pointer">
+                                        <input type="radio" name="status_menyusui" value="tidak" 
+                                               class="w-4 h-4 text-[#0a358c] focus:ring-[#0a358c] border-gray-300"
+                                               {{ old('status_menyusui') == 'tidak' || old('status_menyusui') == null ? 'checked' : '' }}>
+                                        <span class="ml-2 text-sm text-gray-700">Tidak</span>
+                                    </label>
+                                </div>
+                                @error('status_menyusui')
+                                    <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            {{-- Catatan Kesehatan --}}
+                            <div class="md:col-span-2">
+                                <label for="catatan_kesehatan" class="block text-sm font-bold text-gray-700 mb-1.5">
+                                    Catatan Kesehatan Tambahan <span class="font-normal text-gray-500">(Opsional)</span>
+                                </label>
+                                <textarea name="catatan_kesehatan" id="catatan_kesehatan" rows="3" 
+                                          placeholder="Alergi obat, penyakit penyerta, dll."
+                                          class="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0a358c] focus:border-transparent text-gray-900 transition-shadow">{{ old('catatan_kesehatan') }}</textarea>
+                                @error('catatan_kesehatan')
+                                    <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
+
+                        {{-- Submit Button (Moved from Tab 4) --}}
+                        <div class="flex flex-wrap items-center justify-between gap-3 mt-8 pt-6 border-t border-gray-200">
+                            <div>
+                                <button type="button" @click="activeTab = 'dokumen'" 
                                         class="px-6 py-2.5 text-gray-700 bg-gray-100 hover:bg-gray-200 font-semibold rounded-lg transition duration-200 flex items-center">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>

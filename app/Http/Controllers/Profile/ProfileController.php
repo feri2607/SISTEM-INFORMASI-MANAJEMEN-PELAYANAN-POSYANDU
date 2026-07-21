@@ -35,7 +35,10 @@ class ProfileController extends Controller
         ->get();
     $preferences = $user->getPreferences();
 
-    return view('profile.profilewarga.index', compact('user', 'loginActivities', 'preferences'));
+    $warga = $user->warga;
+    $anak = $warga ? $warga->anak()->get() : collect();
+
+    return view('profile.profileWarga.index', compact('user', 'loginActivities', 'preferences', 'warga', 'anak'));
 }
 
     /**
@@ -113,7 +116,6 @@ class ProfileController extends Controller
         }
 
         $user->password = Hash::make($request->password);
-        $user->password_changed_at = now();
         $user->save();
 
         return redirect()->route('profile.index')
@@ -136,7 +138,6 @@ class ProfileController extends Controller
         ]);
 
         $user->password = Hash::make($request->password);
-        $user->password_changed_at = now();
         $user->save();
 
         return redirect()->route('profile.index')

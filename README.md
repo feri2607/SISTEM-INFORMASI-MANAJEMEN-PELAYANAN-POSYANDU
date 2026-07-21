@@ -23,3 +23,9 @@ php artisan serve
 ## Author
 
 Feri2607
+
+# Hapus folder public\storage yang dibuat oleh php artisan storage:link (jika sudah ada)
+Remove-Item -Recurse -Force public\storage
+
+# Buat junction (pengganti symlink di Windows)
+cmd /c mklink /J public\storage storage\app\public

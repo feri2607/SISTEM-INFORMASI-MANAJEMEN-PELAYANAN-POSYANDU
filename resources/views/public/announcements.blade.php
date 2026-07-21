@@ -41,7 +41,7 @@
     {{-- Filter Search Bar (Overlapping Hero) --}}
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative -mt-16 z-20">
         <div class="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-gray-100 p-6">
-            <form method="GET" action="{{ route('public.announcements') }}" x-data="announcementFilter()" @submit.prevent="submitForm">
+            <form method="GET" action="{{ route('public.announcements') }}" x-data="announcementFilter()">
                 <div class="grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_1fr_auto] gap-4 items-end">
                     
                     {{-- Search --}}
@@ -144,12 +144,12 @@
                                     <div class="mt-5 flex flex-wrap gap-4 text-[12px] font-semibold">
                                         <span class="flex items-center gap-1.5 text-gray-500">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg> 
-                                            Tayang: {{ $important->published_at ? $important->published_at->format('d M Y') : '-' }}
+                                            Tayang: {{ $important->publish_at ? $important->publish_at->format('d M Y') : '-' }}
                                         </span>
-                                        @if($important->end_date)
+                                        @if($important->expire_at)
                                         <span class="flex items-center gap-1.5 text-[#cd1d27]">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                            Berakhir: {{ $important->end_date->format('d M Y') }}
+                                            Berakhir: {{ $important->expire_at->format('d M Y') }}
                                         </span>
                                         @endif
                                     </div>
@@ -192,7 +192,7 @@
                                 
                                 {{-- Content --}}
                                 <div class="p-6 flex flex-col flex-1">
-                                    <span class="text-gray-400 text-[11px] font-bold mb-3 uppercase tracking-wider">{{ $item->published_at ? $item->published_at->format('d M Y') : '-' }}</span>
+                                    <span class="text-gray-400 text-[11px] font-bold mb-3 uppercase tracking-wider">{{ $item->publish_at ? $item->publish_at->format('d M Y') : '-' }}</span>
                                     
                                     <h3 class="text-[#111827] text-[17px] font-bold leading-[1.4] mb-3 line-clamp-2 group-hover:text-[#0a256a] transition-colors">
                                         <a href="{{ route('public.announcement-detail', $item->slug) }}">{{ $item->title }}</a>
@@ -203,10 +203,10 @@
                                     </p>
                                     
                                     <div class="mt-auto pt-4 border-t border-gray-100 flex items-center justify-between">
-                                        @if($item->end_date)
+                                        @if($item->expire_at)
                                         <span class="text-gray-500 text-[11px] font-semibold flex items-center gap-1.5">
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> 
-                                            Exp: {{ $item->end_date->format('d M') }}
+                                            Exp: {{ $item->expire_at->format('d M') }}
                                         </span>
                                         @else
                                         <span class="text-gray-400 text-[11px] font-semibold flex items-center gap-1.5">
@@ -264,10 +264,7 @@
             search: '{{ request('search') }}',
             priority: '{{ request('priority') }}',
             bulan: '{{ request('bulan') }}',
-            tahun: '{{ request('tahun') }}',
-            submitForm() {
-                this.$refs.form.submit();
-            }
+            tahun: '{{ request('tahun') }}'
         }
     }
 </script>

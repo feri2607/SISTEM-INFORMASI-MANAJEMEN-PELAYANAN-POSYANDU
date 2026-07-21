@@ -28,13 +28,21 @@ class GoogleController extends Controller
             return redirect()->route('login')->with('error', 'Login dengan Google gagal di tahap autentikasi.');
         }
 
-        // Cari user berdasarkan provider_id atau email
-        $user = User::where('provider_id', $googleUser->getId())
+        // Cari user berdasarkan provider_id atau email (termasuk yang soft deleted)
+        $user = User::withTrashed()
+            ->where('provider_id', $googleUser->getId())
             ->orWhere('email', $googleUser->getEmail())
             ->first();
 
         if ($user) {
             \Illuminate\Support\Facades\Log::info('Existing user found', ['id' => $user->id, 'role' => $user->role]);
+            
+            // Restore jika akun sebelumnya dihapus (soft delete)
+            if ($user->trashed()) {
+                $user->restore();
+                \Illuminate\Support\Facades\Log::info('Restored soft-deleted user via Google login');
+            }
+
             // Blokir admin dan pegawai dari login Google
             if (in_array($user->role, ['admin', 'pegawai'])) {
                 \Illuminate\Support\Facades\Log::warning('Blocked admin/pegawai via Google login');

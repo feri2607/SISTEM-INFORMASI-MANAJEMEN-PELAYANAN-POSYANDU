@@ -45,6 +45,40 @@ class AppServiceProvider extends ServiceProvider
                 return true;
             }
         });
+
+        // =============================================
+        // Auto Populate Data Kategori
+        // =============================================
+        Warga::saved(function ($warga) {
+            if ($warga->verification_status === 'verified') {
+                app(\App\Services\CitizenCategoryService::class)->syncData($warga);
+            }
+        });
+
+        // =============================================
+        // View Composer: Berbagi data kategori warga
+        // ke semua view warga.* dan layout warga
+        // =============================================
+        \Illuminate\Support\Facades\View::composer(
+            ['warga.*', 'profile.*', 'layouts.warga', 'components.public.navbar'],
+            function ($view) {
+                if (auth()->check() && auth()->user()->role === 'user') {
+                    $warga = auth()->user()->warga;
+                    if ($warga) {
+                        $categoryService = app(\App\Services\CitizenCategoryService::class);
+                        $view->with([
+                            'wargaCategories' => $categoryService->getCategories($warga),
+                            'wargaMenus'      => $categoryService->getDashboardMenus($warga),
+                        ]);
+                    } else {
+                        $view->with([
+                            'wargaCategories' => [],
+                            'wargaMenus'      => [],
+                        ]);
+                    }
+                }
+            }
+        );
     }
 }
 

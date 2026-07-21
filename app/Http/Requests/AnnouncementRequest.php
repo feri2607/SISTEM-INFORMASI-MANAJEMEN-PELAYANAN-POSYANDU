@@ -13,6 +13,13 @@ class AnnouncementRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'is_featured' => $this->has('is_featured') ? true : false,
+        ]);
+    }
+
     public function rules(): array
     {
         $announcement = $this->route('announcement');
@@ -25,9 +32,9 @@ class AnnouncementRequest extends FormRequest
             'content' => ['required', 'string'],
             'priority' => ['required', Rule::in(['normal', 'important', 'very_important'])],
             'status' => ['required', Rule::in(['draft', 'published', 'scheduled', 'archived'])],
-            'publish_at' => ['nullable', 'date', 'after_or_equal:today'],
+            'publish_at' => ['nullable', 'date'],
             'expire_at' => ['nullable', 'date', 'after:publish_at'],
-            'attachment' => ['nullable', 'file', 'max:5120', 'mimes:pdf,docx,xlsx,png,jpg,jpeg,webp'],
+            'attachment' => ['nullable', 'file', 'max:20480', 'mimes:pdf,docx,xlsx,png,jpg,jpeg,webp'],
             'is_featured' => ['boolean'],
             'meta_title' => ['nullable', 'string', 'max:255'],
             'meta_description' => ['nullable', 'string', 'max:500'],
@@ -49,7 +56,7 @@ class AnnouncementRequest extends FormRequest
             'status.in' => 'Status tidak valid.',
             'publish_at.after_or_equal' => 'Tanggal publikasi harus hari ini atau setelahnya.',
             'expire_at.after' => 'Tanggal berakhir harus setelah tanggal publikasi.',
-            'attachment.max' => 'Ukuran lampiran maksimal 5 MB.',
+            'attachment.max' => 'Ukuran lampiran maksimal 20 MB.',
             'attachment.mimes' => 'Format lampiran harus PDF, DOCX, XLSX, PNG, JPG, JPEG, atau WEBP.',
         ];
     }

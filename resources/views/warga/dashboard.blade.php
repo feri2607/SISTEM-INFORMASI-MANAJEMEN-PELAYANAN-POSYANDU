@@ -44,6 +44,7 @@
         </div>
 
         {{-- Jumlah Balita --}}
+        @if(in_array('balita', $categories ?? []))
         <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex flex-col justify-between">
             <div class="flex justify-between items-start mb-4">
                 <div class="w-10 h-10 rounded-lg bg-orange-50 text-orange-500 flex items-center justify-center">
@@ -52,9 +53,22 @@
             </div>
             <div>
                 <p class="text-xs font-semibold text-gray-400 tracking-wide uppercase">Jumlah Balita</p>
-                <div class="text-2xl font-bold text-gray-900 mt-1">{{ $stats['balita'] }} Balita</div>
+                <div class="text-2xl font-bold text-gray-900 mt-1">{{ $familySummary['total_balita'] ?? 0 }} Balita</div>
             </div>
         </div>
+        @else
+        <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex flex-col justify-between">
+            <div class="flex justify-between items-start mb-4">
+                <div class="w-10 h-10 rounded-lg bg-green-50 text-green-500 flex items-center justify-center">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+            </div>
+            <div>
+                <p class="text-xs font-semibold text-gray-400 tracking-wide uppercase">Total Anak</p>
+                <div class="text-2xl font-bold text-gray-900 mt-1">{{ $familySummary['total_anak'] ?? 0 }} Anak</div>
+            </div>
+        </div>
+        @endif
 
         {{-- Pelayanan / Kunjungan Terakhir --}}
         <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex flex-col justify-between">
@@ -110,7 +124,16 @@
                             {{-- Kepala Keluarga (Ibu / Ayah) --}}
                             <tr class="hover:bg-gray-50/50 transition">
                                 <td class="px-4 py-4 font-bold text-gray-900">{{ $warga->nama }} (Kepala Keluarga)</td>
-                                <td class="px-4 py-4">WUS/PUS</td>
+                                <td class="px-4 py-4">
+                                    @php
+                                        $kepalaCategories = app(\App\Services\CitizenCategoryService::class)->getCategories($warga);
+                                    @endphp
+                                    @if(count($kepalaCategories) > 0)
+                                        {{ implode(', ', array_map('ucfirst', $kepalaCategories)) }}
+                                    @else
+                                        <span class="text-gray-400 italic">Tidak Ada Kategori Khusus</span>
+                                    @endif
+                                </td>
                                 <td class="px-4 py-4">
                                     <span class="inline-flex px-2.5 py-1 text-[10px] font-bold rounded bg-green-100 text-green-700 uppercase tracking-wider">Sehat</span>
                                 </td>
@@ -150,61 +173,49 @@
                 </div>
             </div>
 
-            {{-- Layanan Terintegrasi --}}
+            {{-- Layanan Terintegrasi — Dinamis Berdasarkan Kategori --}}
             <div>
                 <h2 class="text-lg font-bold text-gray-900 mb-2">Layanan Terintegrasi</h2>
-                <p class="text-sm text-gray-500 mb-6">Pilih kategori layanan kesehatan yang Anda butuhkan.</p>
+                <p class="text-sm text-gray-500 mb-6">Layanan yang tersedia berdasarkan data kesehatan Anda.</p>
                 
-                <div class="grid grid-cols-3 md:grid-cols-6 gap-3 lg:gap-4">
-                    {{-- Balita --}}
-                    <a href="{{ route('warga.balita.index') }}" class="flex flex-col items-center justify-center p-4 bg-white border border-gray-100 shadow-sm rounded-2xl hover:shadow-md hover:border-blue-100 transition group h-28">
-                        <div class="w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mb-3 group-hover:scale-110 transition">
-                            <span class="text-xl">👶</span>
+                @if(!empty($menus))
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 lg:gap-4">
+                    @foreach($menus as $menu)
+                    <a href="{{ $menu['route'] }}" 
+                       class="flex flex-col items-center justify-center p-4 bg-white border border-gray-100 shadow-sm rounded-2xl hover:shadow-md hover:border-{{ $menu['color'] }}-200 transition group min-h-[7rem]">
+                        <div class="w-12 h-12 rounded-full {{ $menu['bg'] }} {{ $menu['text'] }} flex items-center justify-center mb-3 group-hover:scale-110 transition">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                @if($menu['key'] === 'balita')
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                @elseif($menu['key'] === 'kehamilan')
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                                @elseif($menu['key'] === 'menyusui')
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+                                @elseif($menu['key'] === 'remaja')
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                                @elseif($menu['key'] === 'lansia')
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                                @elseif($menu['key'] === 'wus')
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
+                                @endif
+                            </svg>
                         </div>
-                        <span class="text-xs font-semibold text-gray-800">Balita</span>
+                        <span class="text-xs font-semibold text-gray-800 text-center leading-tight">{{ $menu['label'] }}</span>
                     </a>
-                    
-                    {{-- Kehamilan --}}
-                    <a href="{{ route('warga.kehamilan.index') }}" class="flex flex-col items-center justify-center p-4 bg-white border border-gray-100 shadow-sm rounded-2xl hover:shadow-md hover:border-orange-100 transition group h-28">
-                        <div class="w-12 h-12 rounded-full bg-orange-50 text-orange-500 flex items-center justify-center mb-3 group-hover:scale-110 transition">
-                            <span class="text-xl">🤰</span>
-                        </div>
-                        <span class="text-xs font-semibold text-gray-800">Kehamilan</span>
-                    </a>
-
-                    {{-- Menyusui --}}
-                    <a href="#" class="flex flex-col items-center justify-center p-4 bg-white border border-gray-100 shadow-sm rounded-2xl hover:shadow-md hover:border-blue-100 transition group h-28">
-                        <div class="w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mb-3 group-hover:scale-110 transition">
-                            <span class="text-xl">🤱</span>
-                        </div>
-                        <span class="text-xs font-semibold text-gray-800">Menyusui</span>
-                    </a>
-
-
-                    {{-- WUS/PUS --}}
-                    <a href="{{ route('warga.reproduksi.index') }}" class="flex flex-col items-center justify-center p-4 bg-white border border-gray-100 shadow-sm rounded-2xl hover:shadow-md hover:border-indigo-100 transition group h-28">
-                        <div class="w-12 h-12 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center mb-3 group-hover:scale-110 transition">
-                            <span class="text-xl">👩‍❤️‍👨</span>
-                        </div>
-                        <span class="text-xs font-semibold text-gray-800">WUS/PUS</span>
-                    </a>
-                    
-                    {{-- Remaja --}}
-                    <a href="{{ route('warga.remaja.index') }}" class="flex flex-col items-center justify-center p-4 bg-white border border-gray-100 shadow-sm rounded-2xl hover:shadow-md hover:border-purple-100 transition group h-28">
-                        <div class="w-12 h-12 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center mb-3 group-hover:scale-110 transition">
-                            <span class="text-xl">🧑</span>
-                        </div>
-                        <span class="text-xs font-semibold text-gray-800">Remaja</span>
-                    </a>
-
-                    {{-- Lansia --}}
-                    <a href="{{ route('warga.lansia.index') }}" class="flex flex-col items-center justify-center p-4 bg-white border border-gray-100 shadow-sm rounded-2xl hover:shadow-md hover:border-emerald-100 transition group h-28">
-                        <div class="w-12 h-12 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mb-3 group-hover:scale-110 transition">
-                            <span class="text-xl">👴</span>
-                        </div>
-                        <span class="text-xs font-semibold text-gray-800">Lansia</span>
+                    @endforeach
+                </div>
+                @else
+                <div class="bg-amber-50 border border-amber-200 rounded-2xl p-6 text-center">
+                    <div class="w-14 h-14 rounded-full bg-amber-100 text-amber-500 flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </div>
+                    <p class="text-sm font-semibold text-amber-800 mb-1">Belum ada layanan aktif</p>
+                    <p class="text-xs text-amber-600 mb-4">Lengkapi data kesehatan Anda agar sistem dapat menentukan layanan yang sesuai.</p>
+                    <a href="{{ route('profile.index') }}" class="inline-flex items-center px-4 py-2 bg-amber-500 text-white text-xs font-bold rounded-xl hover:bg-amber-600 transition">
+                        Lengkapi Profil Sekarang
                     </a>
                 </div>
+                @endif
             </div>
 
             {{-- Edukasi Kesehatan --}}

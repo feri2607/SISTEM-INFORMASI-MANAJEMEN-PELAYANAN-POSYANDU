@@ -209,6 +209,68 @@
                 </form>
             </div>
 
+            {{-- Data Anak Keluarga --}}
+            <div id="data-anak" class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden relative">
+                <div class="p-6 border-b border-gray-50 bg-gray-50/30 flex justify-between items-center">
+                    <div class="flex items-center space-x-3 text-gray-800">
+                        <div class="p-2 bg-[#e8efff] rounded-lg text-[#0a358c]">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="font-bold text-gray-900">Data Anak Keluarga</h3>
+                    </div>
+                    @if(isset($warga))
+                        <a href="{{ route('profile.anak.create') }}" class="px-4 py-2 bg-[#0a358c] hover:bg-[#082a70] text-white text-xs font-bold rounded-xl transition-colors flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                            Tambah Anak
+                        </a>
+                    @endif
+                </div>
+                
+                <div class="p-6">
+                    @if(!isset($warga))
+                        <div class="text-center py-6">
+                            <p class="text-sm text-gray-500 mb-2">Anda belum melengkapi Data Warga.</p>
+                            <p class="text-xs text-gray-400">Silakan lengkapi profil Anda terlebih dahulu untuk dapat menambahkan anak.</p>
+                        </div>
+                    @elseif(isset($anak) && $anak->isEmpty())
+                        <div class="text-center py-6">
+                            <p class="text-sm text-gray-500 mb-2">Belum ada data anak yang ditambahkan.</p>
+                            <p class="text-xs text-gray-400">Tambahkan data anak untuk memantau tumbuh kembang mereka.</p>
+                        </div>
+                    @else
+                        <div class="grid gap-4">
+                            @foreach($anak as $item)
+                            <div class="border border-gray-100 rounded-xl p-4 flex items-center justify-between">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-10 h-10 rounded-full {{ $item->jenis_kelamin === 'L' ? 'bg-blue-100 text-blue-600' : 'bg-pink-100 text-pink-600' }} flex items-center justify-center text-lg shrink-0">
+                                        {{ $item->jenis_kelamin === 'L' ? '👦' : '👧' }}
+                                    </div>
+                                    <div>
+                                        <div class="flex items-center gap-2">
+                                            <h4 class="font-bold text-gray-900 text-sm">{{ $item->nama }}</h4>
+                                            @if($item->is_balita)
+                                                <span class="px-2 py-0.5 text-[9px] font-bold rounded-full bg-blue-100 text-blue-700 uppercase">Balita</span>
+                                            @endif
+                                        </div>
+                                        <p class="text-xs text-gray-500 mt-1">
+                                            {{ $item->jenis_kelamin_label }} &bull; {{ $item->tanggal_lahir->format('d M Y') }} &bull; {{ $item->umur_label }}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <a href="{{ route('profile.anak.edit', $item) }}" class="p-2 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-lg transition-colors" title="Edit">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                    </a>
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+                    @endif
+                </div>
+            </div>
+
             {{-- Keamanan Akun --}}
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 <div class="p-6 border-b border-gray-50 bg-gray-50/30">

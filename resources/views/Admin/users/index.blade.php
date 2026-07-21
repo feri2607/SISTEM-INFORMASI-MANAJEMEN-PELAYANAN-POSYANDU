@@ -16,7 +16,7 @@
                 <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ number_format($stats['total_admin']) }}</p>
             </div>
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4">
-                <p class="text-sm text-gray-600 dark:text-gray-400">Total Kader</p>
+                <p class="text-sm text-gray-600 dark:text-gray-400">Total Warga</p>
                 <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ number_format($stats['total_user']) }}</p>
             </div>
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4">
@@ -45,7 +45,8 @@
                         class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                         <option value="all">Semua Role</option>
                         <option value="admin" {{ request('role') === 'admin' ? 'selected' : '' }}>Admin</option>
-                        <option value="user" {{ request('role') === 'user' ? 'selected' : '' }}>User</option>
+                        <option value="pegawai" {{ request('role') === 'pegawai' ? 'selected' : '' }}>Pegawai</option>
+                        <option value="warga" {{ request('role') === 'warga' ? 'selected' : '' }}>Warga</option>
                     </select>
                 </div>
 
@@ -146,8 +147,12 @@
                                 <td class="px-6 py-4">
                                     <span class="px-2 py-1 text-xs font-medium rounded-full 
                                             @if($user->role === 'admin') bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400
+                                            @elseif($user->role === 'pegawai') bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400
                                             @else bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 @endif">
-                                        {{ ucfirst($user->role) }}
+                                        @if($user->role === 'admin') Admin
+                                        @elseif($user->role === 'pegawai') Pegawai
+                                        @else Warga
+                                        @endif
                                     </span>
                                 </td>
                                 <td class="px-6 py-4">
@@ -213,14 +218,21 @@
                                             </svg>
                                         </a>
                                         @if(Auth::id() !== $user->id)
-                                            <button onclick="confirmDelete('{{ $user->id }}', '{{ $user->name }}')"
-                                                class="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
-                                                title="Hapus">
-                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                </svg>
-                                            </button>
+                                            <form method="POST"
+                                                  action="{{ route('admin.users.destroy', $user) }}"
+                                                  class="inline"
+                                                  onsubmit="return confirm('Hapus pengguna {{ addslashes($user->name) }}? Tindakan ini tidak dapat dibatalkan.')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit"
+                                                        class="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                                                        title="Hapus">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                    </svg>
+                                                </button>
+                                            </form>
                                         @endif
                                     </div>
                                 </td>
@@ -254,32 +266,6 @@
 
     @push('scripts')
         <script>
-            function confirmDelete(userId, userName) {
-                Swal.fire({
-                    title: 'Hapus Pengguna?',
-                    text: `Apakah Anda yakin ingin menghapus ${userName}?`,
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#EF4444',
-                    cancelButtonColor: '#6B7280',
-                    confirmButtonText: 'Ya, Hapus!',
-                    cancelButtonText: 'Batal',
-                    reverseButtons: true,
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        const form = document.createElement('form');
-                        form.method = 'POST';
-                        form.action = `{{ route('admin.users.destroy', ['user' => ':id']) }}`.replace(':id', userId);
-                        form.innerHTML = `
-                            <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                            <input type="hidden" name="_method" value="DELETE">
-                        `;
-                        document.body.appendChild(form);
-                        form.submit();
-                    }
-                });
-            }
-
             // Real-time search
             let searchTimeout;
             document.querySelector('input[name="search"]').addEventListener('input', function () {

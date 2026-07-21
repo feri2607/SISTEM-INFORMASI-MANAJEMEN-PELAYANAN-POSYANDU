@@ -34,9 +34,9 @@
                     class="space-y-6">
                     @csrf
 
-                    <!-- Email Address -->
+                    <!-- Email Address / NIK -->
                     <div>
-                        <x-input-label for="email" :value="__('Alamat Email')" class="form-label" />
+                        <x-input-label for="email" :value="__('Alamat Email / NIK')" class="form-label" />
                         <div class="relative">
                             <div
                                 class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-gray-400 dark:text-gray-500">
@@ -45,8 +45,8 @@
                                         d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                 </svg>
                             </div>
-                            <input id="email" x-model="email" class="form-input pl-11" type="email" name="email"
-                                required autofocus autocomplete="username" placeholder="nama@email.com" />
+                            <input id="email" x-model="email" class="form-input pl-11" type="text" name="email"
+                                required autofocus autocomplete="username" placeholder="nama@email.com atau NIK" />
                         </div>
                         <x-input-error :messages="$errors->get('email')" class="form-error" />
                     </div>
